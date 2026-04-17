@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>버려진 낙원의 묵시록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://w.soundcloud.com/player/api.js"></script>
+<style>
+    /* --- 세력별 포인트 컬러 테마 --- */
+    :root {
+        --angel-color: #f1c40f;    
+        --demon-color: #ff3333;    
+        --human-color: #2ecc71;    
+        --fallen-color: #ffffff;   
+
+        --currentAccent: var(--angel-color);
+        --currentGlow: rgba(241, 196, 15, 0.4); 
+    }
+
+    body, html {
+        margin: 0; padding: 0; width: 100%; height: 100%;
+        background-color: #000; color: #ffffff;
+        font-family: 'Nanum Myeongjo', serif; overflow: hidden; 
+        text-rendering: optimizeLegibility; 
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- 인트로 연출 섹션 --- */
+    #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 6s ease; }
+    #loading-text { font-size: 0.8rem; letter-spacing: 0.5rem; color: #444; animation: pulse 1.5s infinite; }
+    #trigger-btn { display: none; padding: 15px 40px; font-size: 1rem; letter-spacing: 0.3rem; background: transparent; color: #888; border: 1px solid #444; cursor: pointer; transition: all 0.3s ease; }
+    #trigger-btn:hover { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 20px #fff; }
+    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+
+    .pv-container { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    #bgm-control { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 100000; background: rgba(15, 15, 15, 0.85); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 8px; padding: 10px 20px; color: rgba(255, 255, 255, 0.9); font-family: sans-serif; font-size: 0.75rem; letter-spacing: 0.15rem; cursor: pointer; opacity: 0; transition: opacity 2s ease, all 0.3s ease; }
+    .is-playing #bgm-control { opacity: 1; }
+
+    .pv-bg-city { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://raw.githubusercontent.com/khslone1/npc1/refs/heads/main/bob%20city.png'); background-size: cover; background-position: center; filter: brightness(20%) contrast(120%); z-index: 1; }
+    .pv-bg-heaven { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://raw.githubusercontent.com/khslone1/npc1/refs/heads/main/bob%20heaven.png'); background-size: cover; background-position: center; filter: brightness(70%) contrast(110%); z-index: 2; }
+    .is-playing .pv-bg-heaven { animation: fadeOutBackground 4s ease forwards; animation-delay: 32s; }
+    @keyframes fadeOutBackground { 0% { opacity: 1; filter: brightness(70%); } 30% { filter: brightness(150%); } 100% { opacity: 0; filter: brightness(0%); } }
+
+    .rain { position: absolute; top: -100px; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; opacity: 0; }
+    .is-playing .rain { animation: fadeInRain 3s ease forwards; animation-delay: 32.5s; }
+    @keyframes fadeInRain { to { opacity: 1; } }
+    .rain-drop { position: absolute; bottom: 100%; width: 1.5px; height: 35px; background-color: rgba(255, 255, 255, 0.25); animation: fall 1.2s linear infinite; }
+    @keyframes fall { 0% { transform: translateY(0); } 100% { transform: translateY(120vh); } }
+
+    .center-box { position: relative; width: 100%; height: 40vh; background-color: #000; box-shadow: 0 0 100px 80px #000; display: flex; justify-content: center; align-items: center; z-index: 4; }
+    .text-layer { position: absolute; font-weight: 400; opacity: 0; text-align: center; letter-spacing: 0.3rem; white-space: nowrap; font-size: clamp(1rem, 2vw, 1.8rem); }
+    .holy-text { color: #fffde7; text-shadow: 0 0 15px rgba(255, 255, 200, 0.5); }
+    .noir-text { color: #ffffff; text-shadow: 0 0 10px #000; }
+
+    @keyframes fadeSmoke { 0% { opacity: 0; filter: blur(10px); transform: scale(1.03); } 15% { opacity: 1; filter: blur(0px); transform: scale(1); } 85% { opacity: 1; filter: blur(0px); transform: scale(1); } 100% { opacity: 0; filter: blur(10px); transform: scale(0.97); } }
+    @keyframes bloodFlash { 0% { opacity: 0; transform: scale(1.1); filter: blur(8px); } 15% { opacity: 1; transform: scale(1); filter: blur(0px); text-shadow: 0 0 20px #f00; } 70% { opacity: 1; transform: scale(1); filter: blur(0px); text-shadow: 0 0 20px #f00; } 100% { opacity: 0; transform: scale(1.05); filter: blur(20px); } }
+
+    .is-playing .seq-p1-1 { animation: fadeSmoke 4.5s ease forwards; animation-delay: 4s; }   
+    .is-playing .seq-p1-2 { animation: fadeSmoke 4.5s ease forwards; animation-delay: 8.5s; } 
+    .is-playing .seq-p1-3 { animation: fadeSmoke 4.5s ease forwards; animation-delay: 13s; }  
+    .is-playing .seq-p2-1 { animation: fadeSmoke 4.5s ease forwards; animation-delay: 17.5s; } 
+    .is-playing .seq-p2-2 { animation: fadeSmoke 4.5s ease forwards; animation-delay: 22s; }   
+    .is-playing .seq-p2-3 { animation: bloodFlash 4.5s ease forwards; animation-delay: 26.5s; color: #ff3333; font-weight: 700; } 
+    
+    .is-playing .seq-final { animation: titleRevealAndMove 10.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 31.8s; font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; }
+    @keyframes titleRevealAndMove { 0% { opacity: 1; transform: translateY(0); letter-spacing: 0.5rem; } 41.2% { opacity: 1; transform: translateY(0); letter-spacing: 0.5rem; } 75% { opacity: 1; transform: translateY(-38vh) scale(0.6); letter-spacing: 0.8rem; } 100% { opacity: 1; transform: translateY(-38vh) scale(0.6); letter-spacing: 0.8rem; } }
+
+    .seq-final span { opacity: 0; display: inline-block; color: #ffffff; }
+    .is-playing .seq-final span { animation: typeFlashIn 0.6s ease-out forwards; }
+    @keyframes typeFlashIn {
+        0% { opacity: 0; transform: scale(1.3); filter: blur(10px); }
+        40% { opacity: 1; transform: scale(1); filter: blur(0); text-shadow: 0 0 40px #fff, 0 0 80px var(--currentGlow); }
+        100% { opacity: 1; transform: scale(1); text-shadow: 0 0 15px rgba(255,255,255,0.8), 0 0 30px var(--currentAccent); }
+    }
+    .is-playing .seq-final span:nth-child(n) { animation-delay: calc(31.8s + (0.2s * var(--i))); }
+
+    /* --- 캐릭터 소개란 보드 디자인 --- */
+    .character-board {
+        position: absolute; bottom: -110%; left: 50%; transform: translateX(-50%);
+        width: 95%; max-width: 950px; height: 80vh;
+        background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1); border-bottom: none; border-radius: 20px 20px 0 0;
+        z-index: 5; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .is-playing .character-board { animation: slideUpBoard 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 36s; }
+    @keyframes slideUpBoard { 0% { bottom: -110%; opacity: 0;} 100% { bottom: 0; opacity: 1;} }
+
+    .tab-nav { display: flex; justify-content: space-around; background: rgba(0,0,0,0.6); border-bottom: 1px solid #222; }
+    .tab-btn {
+        padding: 25px; font-size: 1.1rem; letter-spacing: 0.3rem; color: #666; cursor: pointer; transition: 0.3s;
+        flex: 1; text-align: center; border-bottom: 3px solid transparent; font-weight: 700;
+    }
+    .tab-btn.active { color: var(--currentAccent); border-bottom: 3px solid var(--currentAccent); background: rgba(255,255,255,0.03); }
+
+    .char-list { flex: 1; overflow-y: auto; padding: 50px; scrollbar-width: none; }
+    .char-list::-webkit-scrollbar { display: none; }
+
+    .char-item {
+        display: flex; gap: 50px; margin-bottom: 100px; align-items: flex-start;
+        opacity: 0; transform: translateY(30px); transition: 0.6s ease;
+        border-bottom: 1px solid #1a1a1a; padding-bottom: 50px;
+    }
+    .char-item.show { opacity: 1; transform: translateY(0); }
+
+    .char-img-box {
+        flex: 0 0 280px; aspect-ratio: 3/4; background: #000; border: 2px solid #333; 
+        overflow: hidden; border-radius: 4px; cursor: pointer; transition: 0.4s;
+    }
+    .char-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .char-img-box:hover { border-color: var(--currentAccent); box-shadow: 0 0 30px var(--currentGlow); transform: scale(1.03); }
+
+    .char-info-box { flex: 1; text-align: left; padding-top: 15px; }
+    .char-header { margin-bottom: 25px; border-bottom: 1px solid #222; padding-bottom: 10px; color: var(--currentAccent); }
+    .char-name { font-size: 3rem; font-weight: 800; color: #fff; margin: 0; font-family: 'Nanum Myeongjo', serif; letter-spacing: 0.3rem; }
+    
+    .char-stats { display: flex; gap: 15px; margin-bottom: 30px; font-size: 0.95rem; color: #aaa; font-family: sans-serif; font-weight: bold;}
+    .stat-tag { background: #1a1a1a; padding: 6px 14px; border-radius: 3px; border: 1px solid #333; }
+    
+    .char-desc { font-size: 1.55rem; line-height: 1.9; color: #ccc; word-break: keep-all; font-family: 'Nanum Myeongjo', serif; padding-bottom: 10px; }
+
+    /* --- [수정됨] 갤러리 팝업 (이미지 꽉 차게 확대) --- */
+    .gallery-modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+        z-index: 2000000; display: flex; justify-content: center; align-items: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+    }
+    .gallery-modal.show { opacity: 1; pointer-events: auto; }
+
+    .gallery-box {
+        width: 90%; max-width: 1100px; max-height: 90vh;
+        background: #0a0a0a; border: 1px solid #333; border-top: 3px solid var(--currentAccent); border-radius: 8px;
+        display: flex; flex-direction: row; position: relative;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.9);
+        transform: scale(0.95); transition: transform 0.4s ease;
+        overflow: hidden;
+    }
+    .gallery-modal.show .gallery-box { transform: scale(1); }
+
+    /* [수정됨] 패딩을 대폭 줄이고 이미지가 영역을 거의 꽉 채우도록 조정 */
+    .gallery-left {
+        flex: 1.2; /* 왼쪽 창 자체를 더 유동적으로 크게 */
+        padding: 20px; 
+        border-right: 1px solid #222;
+        display: flex; justify-content: center; align-items: center;
+    }
+    .gallery-left-img-wrapper {
+        width: 100%; height: 100%; /* 창 크기에 꽉 맞게 설정 */
+        background: #000; border: 1px solid #333;
+        border-radius: 4px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    .gallery-left-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+    .gallery-right {
+        flex: 1; padding: 40px; display: flex; flex-direction: column; 
+    }
+    
+    .gallery-header { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #222; text-align: left; }
+    .gallery-title { font-size: 1.1rem; color: #fff; letter-spacing: 0.2rem; font-weight: 700;}
+
+    .thumb-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex: 1;
+        overflow-y: auto; scrollbar-width: none;
+    }
+    .thumb-grid::-webkit-scrollbar { display: none; }
+    
+    .thumb-item {
+        aspect-ratio: 1/1; background: #111; border: 1px solid #333; border-radius: 4px; overflow: hidden; cursor: pointer; transition: 0.3s;
+    }
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: 0.3s; }
+    
+    .thumb-item:hover { border-color: var(--currentAccent); transform: translateY(-3px); box-shadow: 0 5px 15px var(--currentGlow); }
+    .thumb-item:hover img { filter: grayscale(0%); }
+
+    .close-gallery {
+        position: absolute; top: 15px; right: 20px; color: #666; font-size: 1.8rem; cursor: pointer; z-index: 10; transition: 0.3s; line-height: 1;
+    }
+    .close-gallery:hover { color: var(--currentAccent); }
+
+    /* 모바일 반응형 처리 */
+    @media (max-width: 850px) { 
+        .gallery-box { flex-direction: column; max-height: 90vh; overflow-y: auto; }
+        .gallery-left { flex: auto; border-right: none; border-bottom: 1px solid #222; padding: 20px; }
+        .gallery-left-img-wrapper { width: 100%; aspect-ratio: 3/4; margin: 0 auto; height: auto;}
+        .gallery-right { padding: 30px; }
+    }
+
+    #sc-player { display: none; }
+</style>
+</head>
+<body data-theme="angel"> 
+
+    <iframe id="sc-player" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" 
+        src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2088115155&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
+    </iframe>
+
+    <div id="start-screen">
+        <div id="loading-text">LOADING...</div>
+        <button id="trigger-btn">▶ SEQUENCE START</button>
+    </div>
+
+    <div class="gallery-modal" id="galleryModal">
+        <div class="gallery-box">
+            <div class="close-gallery" id="closeGallery">×</div>
+            <div class="gallery-left">
+                <div class="gallery-left-img-wrapper">
+                    <img id="galleryLargeImg" src="" alt="갤러리 원본">
+                </div>
+            </div>
+            <div class="gallery-right">
+                <div class="gallery-header">
+                    <div class="gallery-title">GALLERY</div>
+                </div>
+                <div class="thumb-grid" id="thumbGrid">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="pv-container">
+        <button id="bgm-control">♪ BGM ON/OFF</button>
+
+        <div class="pv-bg-city"></div>
+        <div class="pv-bg-heaven"></div>
+        <div class="rain" id="rain-box"></div>
+
+        <div class="center-box">
+            <div class="text-layer seq-p1-1 holy-text">태초에 빚어진 천사와 악마, 선악의 천칭은 완벽한 균형으로 세상을 통치했다.</div>
+            <div class="text-layer seq-p1-2 holy-text">그러나 어느 날, 신은 낙원을 저버리고 그들에게 자신을 따를 것을 명했으니.</div>
+            <div class="text-layer seq-p1-3 holy-text">대부분이 빛을 따랐으나, 기꺼이 지상에 남겨진 자들 또한 존재했다.</div>
+            <div class="text-layer seq-p2-1 noir-text">억겁의 시간 속, 숭고한 사명은 모두 잊힌 채 인간 사회에 섞여든 천사와 악마들.</div>
+            <div class="text-layer seq-p2-2 noir-text">신이 유기한 회색의 도시, 기적은 뒷골목의 네온사인 아래로 추락했다.</div>
+            <div class="text-layer seq-p2-3">무지한 자들 위로, 다시 '강림'이 시작된다.</div>
+            <div class="text-layer seq-final">
+                <span style="--i:0">버</span><span style="--i:1">려</span><span style="--i:2">진</span><span style="--i:3">&nbsp;</span><span style="--i:4">낙</span><span style="--i:5">원</span><span style="--i:6">의</span><span style="--i:7">&nbsp;</span><span style="--i:8">묵</span><span style="--i:9">시</span><span style="--i:10">록</span>
+            </div>
+        </div>
+
+        <div class="character-board">
+            <div class="tab-nav">
+                <div class="tab-btn active" data-cat="angel" onclick="showCategory('angel')">천사</div>
+                <div class="tab-btn" data-cat="demon" onclick="showCategory('demon')">악마</div>
+                <div class="tab-btn" data-cat="human" onclick="showCategory('human')">인간</div>
+                <div class="tab-btn" data-cat="fallen" onclick="showCategory('fallen')">타천사</div>
+            </div>
+            <div class="char-list" id="charList">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const widget = SC.Widget('sc-player');
+        let isMuted = false;
+        widget.bind(SC.Widget.Events.READY, () => widget.setVolume(5));
+
+        // 캐릭터 설명 및 MBTI 반영
+        const characterData = {
+            angel: [
+                { name: "가브리엘", mbti: "ENFJ-A · 2w1", img: "https://drlum.net/bab/g101.png", 
+                  desc: "가장 찬란했던 대천사, 가브리엘은 한때 천상의 빛으로 모든 것을 비추던 존재였지만, 이제는 그 날개를 접은 채 네온이 번지는 도시의 어둠 속으로 스며들어, 낡은 간판 아래 조용히 탐정 사무소를 운영하며 살아가고 있다.",
+                  gallery: ["https://drlum.net/bab/g101.png", "https://drlum.net/bab/g106.png", "https://drlum.net/bab/g203.png", "https://drlum.net/bab/g214.png", "https://drlum.net/bab/g402.png", "https://drlum.net/bab/g303.png"] },
+                { name: "이스라필", mbti: "INTJ-A · 1w9", img: "https://drlum.net/bab/i101.png", 
+                  desc: "적들을 불사지르던 용맹한 천사, 과거 전장을 붉게 물들이며 모든 것을 태워버리던 존재였지만, 지금은 사라지지 않은 잔열처럼 식지 못한 채, 네온과 그림자가 뒤엉킨 도시의 밤을 끝없이 떠돌고 있다.",
+                  gallery: ["https://drlum.net/bab/i101.png", "https://drlum.net/bab/i205.png", "https://drlum.net/bab/i301.png", "https://drlum.net/bab/i403.png", "https://drlum.net/bab/i213.png", "https://drlum.net/bab/i303.png"] },
+                { name: "세라프", mbti: "ESFP-A · 7w6", img: "https://drlum.net/bab/c101.png", 
+                  desc: "신의 곁을 지키던 천사, 가장 가까운 자리에서 신의 숨결을 지켜보던 존재였지만, 지금은 그 자리를 떠나 네온빛이 스며든 도시의 골목과 거리 사이를 오가며, 무엇이든 해내는 만능 아르바이트 소녀로 살아가고 있다.",
+                  gallery: ["https://drlum.net/bab/c101.png", "https://drlum.net/bab/c106.png", "https://drlum.net/bab/c217.png", "https://drlum.net/bab/c401.png", "https://drlum.net/bab/c216.png", "https://drlum.net/bab/c304.png"] },
+                { name: "카마엘", mbti: "ISTP-A · 8w9", img: "https://drlum.net/bab/k101.png", 
+                  desc: "천사와 인간의 혼혈은 빛과 속세의 흔적을 함께 지닌 채 미묘하게 어긋난 존재로, 지금은 바벨 수도원의 긴 회랑과 적막한 뜰을 조용히 거닐며, 낮과 밤의 경계 어딘가에 어울리는 그림자처럼 그곳에 머물고 있다.",
+                  gallery: ["https://drlum.net/bab/k101.png", "https://drlum.net/bab/k102.png", "https://drlum.net/bab/k106.png", "https://drlum.net/bab/k110.png", "https://drlum.net/bab/k302.png", "https://drlum.net/bab/k305.png"] }
+            ],
+            demon: [
+                { name: "사티나", mbti: "ENTP-A · 7w8", img: "https://drlum.net/bab/s101.png", 
+                  desc: "지옥을 호령하던 대악마 사탄은 심연의 군세를 거느리며 모든 것을 굴복시키던 존재였지만, 현재 타락한 위엄을 숨긴 채 네온이 흐릿하게 번지는 거리 한켠에서, 낮게 깔린 웃음과 독한 술 냄새 속에 묻혀있는 술집을 운영하고 있다.",
+                  gallery: ["https://drlum.net/bab/s101.png", "https://drlum.net/bab/s105.png", "https://drlum.net/bab/s208.png", "https://drlum.net/bab/s219.png", "https://drlum.net/bab/s301.png", "https://drlum.net/bab/s304.png"] },
+                { name: "루시퍼", mbti: "INTJ-T · 5w6", img: "https://drlum.net/bab/l108.png", 
+                  desc: "악의 진정한 화신은 한때 이름만으로도 모든 것을 떨게 만들던 존재였고, 지금도 그 기척을 지우지 않은 채, 네온이 꺼진 골목과 깊어진 밤의 틈 사이를 미끄러지듯 헤매며 여전히 어둠 속을 배회하고 있다.",
+                  gallery: ["https://drlum.net/bab/l108.png", "https://drlum.net/bab/l102.png", "https://drlum.net/bab/l204.png", "https://drlum.net/bab/l218.png", "https://drlum.net/bab/l213.png", "https://drlum.net/bab/l303.png"] },
+                { name: "벨페르체", mbti: "ISFP-T · 4w3", img: "https://drlum.net/bab/b101.png", 
+                  desc: "서큐버스계 악마. 한때 욕망과 유혹의 정점에서 밤을 지배하던 존재였지만, 지금은 그 흔적을 애써 지워내려는 듯 네온이 번지는 도시의 틈 속에 스며들어, 아무 일도 없었던 것처럼 과거를 부정하며 살아가고 있다.",
+                  gallery: ["https://drlum.net/bab/b101.png", "https://drlum.net/bab/b106.png", "https://drlum.net/bab/b207.png", "https://drlum.net/bab/b402.png", "https://drlum.net/bab/b302.png", "https://drlum.net/bab/b304.png"] },
+                { name: "안드라스", mbti: "ESTP-A · 8w7", img: "https://drlum.net/bab/d101.png", 
+                  desc: "악마와 인간의 혼혈, 은은히 배어든 어둠과 인간적인 체온을 함께 지닌 채, 지금은 네온이 잔잔히 흔들리는 밤의 바 안쪽에서 붉은 액체를 능숙하게 다루며, 한 잔의 술에 말로 다 하지 못할 이야기들을 녹여내고 있다.",
+                  gallery: ["https://drlum.net/bab/d101.png", "https://drlum.net/bab/d107.png", "https://drlum.net/bab/d109.png", "https://drlum.net/bab/d302.png", "https://drlum.net/bab/d103.png", "https://drlum.net/bab/d306.png"] }
+            ],
+            human: [
+                { name: "바르토사", mbti: "INTJ-A · 5w4", img: "https://drlum.net/bab/v101.png", 
+                  desc: "바벨 수도원장은 침묵과 기도의 무게를 온몸에 두른 채, 수도원의 깊은 중심부에서 인간이라는 이름이 아직 무너지지 않았음을 증명하듯 서 있는, 마지막 보루로 남아 있다.",
+                  gallery: ["https://drlum.net/bab/v101.png", "https://drlum.net/bab/v106.png", "https://drlum.net/bab/v210.png", "https://drlum.net/bab/v404.png", "https://drlum.net/bab/v214.png", "https://drlum.net/bab/v305.png"] },
+                { name: "마리아", mbti: "ISFJ-T · 2w1", img: "https://drlum.net/bab/u101.png", 
+                  desc: "기억을 잃은 소녀는 사라진 과거의 조각들을 품은 채 앞으로 나아가는 존재로, 지금은 차가운 도시를 오가며 아직 다 드러나지 않은 잠재력을 안고 수습 퇴마사로 활동하고 있다.",
+                  gallery: ["https://drlum.net/bab/u101.png", "https://drlum.net/bab/u102.png", "https://drlum.net/bab/u216.png", "https://drlum.net/bab/u403.png", "https://drlum.net/bab/u303.png", "https://drlum.net/bab/u306.png"] },
+                { name: "피비안", mbti: "INFP-A · 4w5", img: "https://drlum.net/bab/p101.png", 
+                  desc: "유복한 가문으로 태어날때부터 모든 것을 손에 쥔 듯 보였지만, 그 안에서 현실보다 더 선명한 세계를 그려내는 존재로, 지금은 잉크와 종이 사이에 스며든 채 이야기를 엮어내는 소설가이자, 끝내 깨어나지 않으려는 꿈속을 유영하는 몽상가로 살아가고 있다.",
+                  gallery: ["https://drlum.net/bab/p101.png", "https://drlum.net/bab/p102.png", "https://drlum.net/bab/p202.png", "https://drlum.net/bab/p207.png", "https://drlum.net/bab/p407.png", "https://drlum.net/bab/p215.png"] },
+                { name: "조반니", mbti: "ISTJ-A · 1w9", img: "https://drlum.net/bab/j101.png", 
+                  desc: "바벨 수도원의 퇴마사, 어둠과 맞서는 일을 업으로 삼아 좀처럼 꺼지지 않는 집요함을 품은 채, 깊어지는 밤과 뒤틀린 기척 사이를 가로지르며, 악마조차 등을 돌리게 만들 만한 끈기로 적을 끝까지 추적한다.",
+                  gallery: ["https://drlum.net/bab/j101.png", "https://drlum.net/bab/j104.png", "https://drlum.net/bab/j106.png", "https://drlum.net/bab/j109.png", "https://drlum.net/bab/j302.png", "https://drlum.net/bab/j304.png"] }
+            ],
+            fallen: [
+                { name: "아자젤", mbti: "INTP-T · 5w4", img: "https://drlum.net/bab/a101.png", 
+                  desc: "금지된 지식을 탐구한 끝에 추락한 천사, 한때는 누구보다 높은 곳에서 빛을 내려다보던 존재였지만, 이제는 그 대가를 짊어진 채 네온이 번지는 도시의 어둠 속을 거닐며, 여전히 버리지 못한 진실의 조각들을 집요하게 좇고 있다.",
+                  gallery: ["https://drlum.net/bab/a101.png", "https://drlum.net/bab/a105.png", "https://drlum.net/bab/a209.png", "https://drlum.net/bab/a213.png", "https://drlum.net/bab/a401.png", "https://drlum.net/bab/a303.png"] }
+            ]
+        };
+
+        const list = document.getElementById('charList');
+        const btns = document.querySelectorAll('.tab-btn');
+        const galleryModal = document.getElementById('galleryModal');
+        const galleryLargeImg = document.getElementById('galleryLargeImg');
+        const thumbGrid = document.getElementById('thumbGrid');
+
+        const categoryColors = {
+            angel: { accent: 'var(--angel-color)', glow: 'rgba(241, 196, 15, 0.4)' },
+            demon: { accent: 'var(--demon-color)', glow: 'rgba(255, 51, 51, 0.4)' },
+            human: { accent: 'var(--human-color)', glow: 'rgba(46, 204, 113, 0.4)' },
+            fallen: { accent: 'var(--fallen-color)', glow: 'rgba(255, 255, 255, 0.4)' }
+        };
+
+        function showCategory(cat) {
+            btns.forEach(btn => {
+                if(btn.getAttribute('data-cat') === cat) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            document.documentElement.style.setProperty('--currentAccent', categoryColors[cat].accent);
+            document.documentElement.style.setProperty('--currentGlow', categoryColors[cat].glow);
+
+            list.innerHTML = "";
+            characterData[cat].forEach((char, idx) => {
+                const item = document.createElement('div');
+                item.className = 'char-item';
+
+                // [수정됨] 성별 코드 및 관련 HTML 태그 완전히 제거
+                item.innerHTML = `
+                    <div class="char-img-box" onclick="openGallery('${cat}', ${idx})"><img src="${char.img}"></div>
+                    <div class="char-info-box">
+                        <div class="char-header">
+                            <div class="char-name">${char.name}</div>
+                        </div>
+                        <div class="char-stats">
+                            <span class="stat-tag">${char.mbti}</span>
+                        </div>
+                        <div class="char-desc">${char.desc}</div>
+                    </div>
+                `;
+                list.appendChild(item);
+                setTimeout(() => item.classList.add('show'), idx * 150);
+            });
+            list.scrollTop = 0;
+        }
+
+        function openGallery(cat, idx) {
+            const char = characterData[cat][idx];
+            galleryLargeImg.src = char.img;
+
+            thumbGrid.innerHTML = "";
+            char.gallery.forEach((imgSrc) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'thumb-item';
+                thumb.onclick = () => changeGalleryImage(imgSrc); 
+                thumb.innerHTML = `<img src="${imgSrc}" alt="thumbnail">`;
+                thumbGrid.appendChild(thumb);
+            });
+
+            galleryModal.classList.add('show');
+        }
+
+        function changeGalleryImage(imgSrc) {
+            galleryLargeImg.src = imgSrc;
+        }
+
+        document.getElementById('closeGallery').addEventListener('click', () => galleryModal.classList.remove('show'));
+        galleryModal.addEventListener('click', (e) => { 
+            if(e.target === galleryModal) galleryModal.classList.remove('show'); 
+        });
+
+        // 초기 실행
+        showCategory('angel');
+
+        setTimeout(() => {
+            document.getElementById('loading-text').style.display = 'none';
+            document.getElementById('trigger-btn').style.display = 'block';
+        }, 3000);
+
+        const rainBox = document.getElementById('rain-box');
+        for (let i = 0; i < 160; i++) {
+            const drop = document.createElement('div');
+            drop.classList.add('rain-drop');
+            drop.style.left = Math.random() * 100 + '%';
+            drop.style.animationDelay = Math.random() * 1.5 + 's';
+            drop.style.animationDuration = (Math.random() * 0.4 + 0.7) + 's'; 
+            rainBox.appendChild(drop);
+        }
+
+        document.getElementById('trigger-btn').addEventListener('click', function() {
+            widget.play();
+            document.getElementById('main-content').classList.add('is-playing');
+            this.style.display = 'none';
+            document.getElementById('start-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('start-screen').style.display = 'none', 6000);
+        });
+
+        document.getElementById('bgm-control').addEventListener('click', function() {
+            if (isMuted) {
+                widget.play();
+                this.style.color = 'rgba(255, 255, 255, 0.9)';
+            } else {
+                widget.pause();
+                this.style.color = 'rgba(255, 255, 255, 0.4)';
+            }
+            isMuted = !isMuted;
+        });
+    </script>
+</body>
+</html>
