@@ -28,17 +28,27 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    /* --- 인트로 연출 섹션 --- */
+    /* --- 인트로 및 시작 화면 --- */
     #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 6s ease; }
     #loading-text { font-size: 0.8rem; letter-spacing: 0.5rem; color: #444; animation: pulse 1.5s infinite; }
-    #trigger-btn { display: none; padding: 15px 40px; font-size: 1rem; letter-spacing: 0.3rem; background: transparent; color: #888; border: 1px solid #444; cursor: pointer; transition: all 0.3s ease; }
-    #trigger-btn:hover { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 20px #fff; }
+    
+    /* [수정됨] 버튼 그룹 레이아웃 */
+    #start-btn-group { display: none; flex-direction: column; gap: 20px; align-items: center; }
+    .start-btn { 
+        padding: 15px 40px; font-size: 1rem; letter-spacing: 0.3rem; 
+        background: transparent; color: #888; border: 1px solid #444; 
+        cursor: pointer; transition: all 0.3s ease; 
+        font-family: 'Nanum Myeongjo', serif; width: 280px; text-align: center;
+    }
+    .start-btn:hover { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 20px #fff; }
     @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
+    /* --- 메인 컨테이너 --- */
     .pv-container { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
     #bgm-control { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 100000; background: rgba(15, 15, 15, 0.85); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 8px; padding: 10px 20px; color: rgba(255, 255, 255, 0.9); font-family: sans-serif; font-size: 0.75rem; letter-spacing: 0.15rem; cursor: pointer; opacity: 0; transition: opacity 2s ease, all 0.3s ease; }
-    .is-playing #bgm-control { opacity: 1; }
+    .is-playing #bgm-control, .is-skipped #bgm-control { opacity: 1; }
 
+    /* --- 배경 및 빗방울 연출 --- */
     .pv-bg-city { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://raw.githubusercontent.com/khslone1/npc1/refs/heads/main/bob%20city.png'); background-size: cover; background-position: center; filter: brightness(20%) contrast(120%); z-index: 1; }
     .pv-bg-heaven { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://raw.githubusercontent.com/khslone1/npc1/refs/heads/main/bob%20heaven.png'); background-size: cover; background-position: center; filter: brightness(70%) contrast(110%); z-index: 2; }
     .is-playing .pv-bg-heaven { animation: fadeOutBackground 4s ease forwards; animation-delay: 32s; }
@@ -50,6 +60,7 @@
     .rain-drop { position: absolute; bottom: 100%; width: 1.5px; height: 35px; background-color: rgba(255, 255, 255, 0.25); animation: fall 1.2s linear infinite; }
     @keyframes fall { 0% { transform: translateY(0); } 100% { transform: translateY(120vh); } }
 
+    /* --- 텍스트 시퀀스 --- */
     .center-box { position: relative; width: 100%; height: 40vh; background-color: #000; box-shadow: 0 0 100px 80px #000; display: flex; justify-content: center; align-items: center; z-index: 4; }
     .text-layer { position: absolute; font-weight: 400; opacity: 0; text-align: center; letter-spacing: 0.3rem; white-space: nowrap; font-size: clamp(1rem, 2vw, 1.8rem); }
     .holy-text { color: #fffde7; text-shadow: 0 0 15px rgba(255, 255, 200, 0.5); }
@@ -76,6 +87,28 @@
         100% { opacity: 1; transform: scale(1); text-shadow: 0 0 15px rgba(255,255,255,0.8), 0 0 30px var(--currentAccent); }
     }
     .is-playing .seq-final span:nth-child(n) { animation-delay: calc(31.8s + (0.2s * var(--i))); }
+
+    /* --- [신규 추가] 스킵(Skip) 모드 전용 CSS 클래스 --- */
+    .is-skipped .pv-bg-heaven { opacity: 0; animation: none; } /* 천국 배경 즉시 제거 */
+    .is-skipped .rain { opacity: 1; animation: none; } /* 비 즉시 표시 */
+    
+    /* 기존 대사들 모두 숨김 */
+    .is-skipped .seq-p1-1, .is-skipped .seq-p1-2, .is-skipped .seq-p1-3,
+    .is-skipped .seq-p2-1, .is-skipped .seq-p2-2, .is-skipped .seq-p2-3 { display: none !important; animation: none !important; }
+    
+    /* 최종 타이틀을 즉시 상단에 위치시킴 */
+    .is-skipped .seq-final {
+        opacity: 1; animation: none; 
+        transform: translateY(-38vh) scale(0.6); letter-spacing: 0.8rem; 
+        font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800;
+    }
+    .is-skipped .seq-final span {
+        opacity: 1; animation: none;
+        text-shadow: 0 0 15px rgba(255,255,255,0.8), 0 0 30px var(--currentAccent);
+    }
+    
+    /* 캐릭터 보드 즉시 표시 */
+    .is-skipped .character-board { bottom: 0; opacity: 1; animation: none; }
 
     /* --- 캐릭터 소개란 보드 디자인 --- */
     .character-board {
@@ -104,6 +137,7 @@
         border-bottom: 1px solid #1a1a1a; padding-bottom: 50px;
     }
     .char-item.show { opacity: 1; transform: translateY(0); }
+    .is-skipped .char-item { transition: 0.3s ease; } /* 스킵 시 더 빠르게 표시 */
 
     .char-img-box {
         flex: 0 0 280px; aspect-ratio: 3/4; background: #000; border: 2px solid #333; 
@@ -121,7 +155,7 @@
     
     .char-desc { font-size: 1.55rem; line-height: 1.9; color: #ccc; word-break: keep-all; font-family: 'Nanum Myeongjo', serif; padding-bottom: 10px; }
 
-    /* --- [수정됨] 갤러리 팝업 (이미지 꽉 차게 확대) --- */
+    /* --- 갤러리 팝업 --- */
     .gallery-modal {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
@@ -140,47 +174,32 @@
     }
     .gallery-modal.show .gallery-box { transform: scale(1); }
 
-    /* [수정됨] 패딩을 대폭 줄이고 이미지가 영역을 거의 꽉 채우도록 조정 */
     .gallery-left {
-        flex: 1.2; /* 왼쪽 창 자체를 더 유동적으로 크게 */
-        padding: 20px; 
-        border-right: 1px solid #222;
+        flex: 1.2; padding: 20px; border-right: 1px solid #222;
         display: flex; justify-content: center; align-items: center;
     }
     .gallery-left-img-wrapper {
-        width: 100%; height: 100%; /* 창 크기에 꽉 맞게 설정 */
-        background: #000; border: 1px solid #333;
+        width: 100%; height: 100%; background: #000; border: 1px solid #333;
         border-radius: 4px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
     .gallery-left-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 
-    .gallery-right {
-        flex: 1; padding: 40px; display: flex; flex-direction: column; 
-    }
-    
+    .gallery-right { flex: 1; padding: 40px; display: flex; flex-direction: column; }
     .gallery-header { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #222; text-align: left; }
     .gallery-title { font-size: 1.1rem; color: #fff; letter-spacing: 0.2rem; font-weight: 700;}
 
-    .thumb-grid {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex: 1;
-        overflow-y: auto; scrollbar-width: none;
-    }
+    .thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex: 1; overflow-y: auto; scrollbar-width: none; }
     .thumb-grid::-webkit-scrollbar { display: none; }
     
-    .thumb-item {
-        aspect-ratio: 1/1; background: #111; border: 1px solid #333; border-radius: 4px; overflow: hidden; cursor: pointer; transition: 0.3s;
-    }
+    .thumb-item { aspect-ratio: 1/1; background: #111; border: 1px solid #333; border-radius: 4px; overflow: hidden; cursor: pointer; transition: 0.3s; }
     .thumb-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: 0.3s; }
     
     .thumb-item:hover { border-color: var(--currentAccent); transform: translateY(-3px); box-shadow: 0 5px 15px var(--currentGlow); }
     .thumb-item:hover img { filter: grayscale(0%); }
 
-    .close-gallery {
-        position: absolute; top: 15px; right: 20px; color: #666; font-size: 1.8rem; cursor: pointer; z-index: 10; transition: 0.3s; line-height: 1;
-    }
+    .close-gallery { position: absolute; top: 15px; right: 20px; color: #666; font-size: 1.8rem; cursor: pointer; z-index: 10; transition: 0.3s; line-height: 1; }
     .close-gallery:hover { color: var(--currentAccent); }
 
-    /* 모바일 반응형 처리 */
     @media (max-width: 850px) { 
         .gallery-box { flex-direction: column; max-height: 90vh; overflow-y: auto; }
         .gallery-left { flex: auto; border-right: none; border-bottom: 1px solid #222; padding: 20px; }
@@ -199,7 +218,10 @@
 
     <div id="start-screen">
         <div id="loading-text">LOADING...</div>
-        <button id="trigger-btn">▶ SEQUENCE START</button>
+        <div id="start-btn-group">
+            <button id="trigger-btn" class="start-btn">▶ 인트로 보기</button>
+            <button id="skip-btn" class="start-btn">▶ 스킵</button>
+        </div>
     </div>
 
     <div class="gallery-modal" id="galleryModal">
@@ -254,19 +276,18 @@
     <script>
         const widget = SC.Widget('sc-player');
         let isMuted = false;
-        widget.bind(SC.Widget.Events.READY, () => widget.setVolume(30));
+        widget.bind(SC.Widget.Events.READY, () => widget.setVolume(5));
 
-        // 캐릭터 설명 및 MBTI 반영
         const characterData = {
             angel: [
                 { name: "가브리엘", mbti: "ENFJ-A · 2w1", img: "https://drlum.net/bab/g101.png", 
-                  desc: "가장 찬란했던 대천사, 가브리엘은 한때 천상의 빛으로 모든 것을 비추던 존재였지만, 이제는 그 날개를 접은 채 네온이 번지는 도시의 어둠 속으로 스며들어, 낡은 간판 아래 조용히 탐정 사무소를 운영하며 살아가고 있다.",
+                  desc: "가장 찬란했던 대천사, 한때 천상의 빛으로 모든 것을 비추던 존재였지만, 이제는 그 날개를 접은 채 네온이 번지는 도시의 어둠 속으로 스며들어, 낡은 간판 아래 조용히 탐정 사무소를 운영하며 살아가고 있다.",
                   gallery: ["https://drlum.net/bab/g101.png", "https://drlum.net/bab/g106.png", "https://drlum.net/bab/g203.png", "https://drlum.net/bab/g214.png", "https://drlum.net/bab/g402.png", "https://drlum.net/bab/g303.png"] },
                 { name: "이스라필", mbti: "INTJ-A · 1w9", img: "https://drlum.net/bab/i101.png", 
-                  desc: "적들을 불사지르던 용맹한 천사, 과거 전장을 붉게 물들이며 모든 것을 태워버리던 존재였지만, 지금은 사라지지 않은 잔열처럼 식지 못한 채, 네온과 그림자가 뒤엉킨 도시의 밤을 끝없이 떠돌고 있다.",
+                  desc: "적들을 불사지르던 용맹한 천사, 과거 전장을 붉게 물들이며 모든 것을 태워버리던 존재였지만, 지금은 사라지지 않은 잔열처럼 식지 못한 채, 네온과 그림자가 뒤엉킨 도시의 밤을 떠돈다.",
                   gallery: ["https://drlum.net/bab/i101.png", "https://drlum.net/bab/i205.png", "https://drlum.net/bab/i301.png", "https://drlum.net/bab/i403.png", "https://drlum.net/bab/i213.png", "https://drlum.net/bab/i303.png"] },
                 { name: "세라프", mbti: "ESFP-A · 7w6", img: "https://drlum.net/bab/c101.png", 
-                  desc: "신의 곁을 지키던 천사, 가장 가까운 자리에서 신의 숨결을 지켜보던 존재였지만, 지금은 그 자리를 떠나 네온빛이 스며든 도시의 골목과 거리 사이를 오가며, 무엇이든 해내는 만능 아르바이트 소녀로 살아가고 있다.",
+                  desc: "신의 곁을 지키던 천사, 가장 가까운 자리에서 신의 숨결을 지켜보던 존재였지만, 지금은 그 자리를 떠나 네온빛이 스며든 도시의 골목과 거리 사이를 오가며, 만능 아르바이트 소녀로 살아가고 있다.",
                   gallery: ["https://drlum.net/bab/c101.png", "https://drlum.net/bab/c106.png", "https://drlum.net/bab/c217.png", "https://drlum.net/bab/c401.png", "https://drlum.net/bab/c216.png", "https://drlum.net/bab/c304.png"] },
                 { name: "카마엘", mbti: "ISTP-A · 8w9", img: "https://drlum.net/bab/k101.png", 
                   desc: "천사와 인간의 혼혈은 빛과 속세의 흔적을 함께 지닌 채 미묘하게 어긋난 존재로, 지금은 바벨 수도원의 긴 회랑과 적막한 뜰을 조용히 거닐며, 낮과 밤의 경계 어딘가에 어울리는 그림자처럼 그곳에 머물고 있다.",
@@ -294,7 +315,7 @@
                   desc: "기억을 잃은 소녀는 사라진 과거의 조각들을 품은 채 앞으로 나아가는 존재로, 지금은 차가운 도시를 오가며 아직 다 드러나지 않은 잠재력을 안고 수습 퇴마사로 활동하고 있다.",
                   gallery: ["https://drlum.net/bab/u101.png", "https://drlum.net/bab/u102.png", "https://drlum.net/bab/u216.png", "https://drlum.net/bab/u403.png", "https://drlum.net/bab/u303.png", "https://drlum.net/bab/u306.png"] },
                 { name: "피비안", mbti: "INFP-A · 4w5", img: "https://drlum.net/bab/p101.png", 
-                  desc: "유복한 가문으로 태어날때부터 모든 것을 손에 쥔 듯 보였지만, 그 안에서 현실보다 더 선명한 세계를 그려내는 존재로, 지금은 잉크와 종이 사이에 스며든 채 이야기를 엮어내는 소설가이자, 끝내 깨어나지 않으려는 꿈속을 유영하는 몽상가로 살아가고 있다.",
+                  desc: "유복한 가문으로 태어나 모든 것을 손에 쥔 듯 보였지만, 그 안에서 현실보다 더 선명한 세계를 그려내는 존재로, 지금은 작품과 공간 사이에 스며든 채 의미를 엮어내는 소개자이자, 끝내 깨어나지 않으려는 꿈속을 유영하는 몽상가로 살아가고 있다.",
                   gallery: ["https://drlum.net/bab/p101.png", "https://drlum.net/bab/p102.png", "https://drlum.net/bab/p202.png", "https://drlum.net/bab/p207.png", "https://drlum.net/bab/p407.png", "https://drlum.net/bab/p215.png"] },
                 { name: "조반니", mbti: "ISTJ-A · 1w9", img: "https://drlum.net/bab/j101.png", 
                   desc: "바벨 수도원의 퇴마사, 어둠과 맞서는 일을 업으로 삼아 좀처럼 꺼지지 않는 집요함을 품은 채, 깊어지는 밤과 뒤틀린 기척 사이를 가로지르며, 악마조차 등을 돌리게 만들 만한 끈기로 적을 끝까지 추적한다.",
@@ -337,7 +358,6 @@
                 const item = document.createElement('div');
                 item.className = 'char-item';
 
-                // [수정됨] 성별 코드 및 관련 HTML 태그 완전히 제거
                 item.innerHTML = `
                     <div class="char-img-box" onclick="openGallery('${cat}', ${idx})"><img src="${char.img}"></div>
                     <div class="char-info-box">
@@ -351,7 +371,9 @@
                     </div>
                 `;
                 list.appendChild(item);
-                setTimeout(() => item.classList.add('show'), idx * 150);
+                // 스킵 상태라면 애니메이션 없이 즉시 표시되도록 시간 단축
+                const delay = document.getElementById('main-content').classList.contains('is-skipped') ? 0 : idx * 150;
+                setTimeout(() => item.classList.add('show'), delay);
             });
             list.scrollTop = 0;
         }
@@ -381,12 +403,12 @@
             if(e.target === galleryModal) galleryModal.classList.remove('show'); 
         });
 
-        // 초기 실행
         showCategory('angel');
 
+        // 1. 초기 로딩 후 두 버튼 표시
         setTimeout(() => {
             document.getElementById('loading-text').style.display = 'none';
-            document.getElementById('trigger-btn').style.display = 'block';
+            document.getElementById('start-btn-group').style.display = 'flex';
         }, 3000);
 
         const rainBox = document.getElementById('rain-box');
@@ -399,12 +421,32 @@
             rainBox.appendChild(drop);
         }
 
+        // [이벤트] 2. 인트로 시청 클릭 시
         document.getElementById('trigger-btn').addEventListener('click', function() {
             widget.play();
             document.getElementById('main-content').classList.add('is-playing');
-            this.style.display = 'none';
+            document.getElementById('start-btn-group').style.display = 'none';
+            
             document.getElementById('start-screen').style.opacity = '0';
             setTimeout(() => document.getElementById('start-screen').style.display = 'none', 6000);
+        });
+
+        // [이벤트] 3. 스킵 (캐릭터 소개 즉시 진입) 클릭 시
+        document.getElementById('skip-btn').addEventListener('click', function() {
+            widget.play();
+            // is-skipped 클래스 추가하여 CSS 애니메이션 통과
+            document.getElementById('main-content').classList.add('is-skipped');
+            document.getElementById('start-btn-group').style.display = 'none';
+            
+            // 빠른 전환을 위해 페이드아웃 속도 조절
+            const startScreen = document.getElementById('start-screen');
+            startScreen.style.transition = 'opacity 1.5s ease';
+            startScreen.style.opacity = '0';
+            
+            setTimeout(() => startScreen.style.display = 'none', 1500);
+            
+            // 현재 활성화된 탭의 리스트들도 즉시 보이도록 강제 갱신
+            document.querySelectorAll('.char-item').forEach(item => item.classList.add('show'));
         });
 
         document.getElementById('bgm-control').addEventListener('click', function() {
